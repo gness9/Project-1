@@ -7,8 +7,8 @@ CIS 520 - Programming Project #1
 >> Fill in the names and email addresses of your group members.
 
 Glenn Ness <gness9@ksu.edu>
-Zayin Brunson <>
-Aaron Sampson <>
+Zayin Brunson <zaybrunson@ksu.edu>
+Aaron Sampson <amsimpso@ksu.edu>
 
 ---- PRELIMINARIES ----
 
@@ -29,30 +29,53 @@ Aaron Sampson <>
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+	*threads/thread.h: struct list_elem telem
+		- List element used so we can add an element to every thread
+	*threads/thread.h: long toExpire
+		- long variable to keep track of how much time the thread has until it has advanced by at least t_ticks timer ticks
+	*devices/timer.c: static struct list sleep_list
+		- linked list utilized to keep track of any sleeping threads
+
 
 ---- ALGORITHMS ----
 
 >> A2: Briefly describe what happens in a call to your timer_sleep(),
 >> including the effects of the timer interrupt handler.
+- When timer_sleep() is called, the current threads toExpire is initialized to the amount of ticks until it should wake up on.
+Interrupts are then disabled so the thread can be blocked after it is added to the list of sleeping threads.
+Afterwards the interrupts are enabled again.
+- timer_interrupt() checks the first value in the sorted list of sleeping threads and checks to if
+the list has passed enough time in toExpire to be unblocked. If it is we unblock the thread, reset the
+toExpire value, and pop the thread off the sleeping threads list.
 
 >> A3: What steps are taken to minimize the amount of time spent in
 >> the timer interrupt handler?
+-The timer_interrupt() handler will check to see if there are any sleeping threads before even calling the first thread in the list.
+The handler will also make sure to see if the toExpire value is less then or equal to the current tick before proceeding with unblocking the thread.
+
 
 
 ---- SYNCHRONIZATION ----
 
 >> A4: How are race conditions avoided when multiple threads call
 >> timer_sleep() simultaneously?
+- By disabling the interrupts before proceeding with the thread blocking we can ensure that
+only one thread will be blocked at a time avoiding race conditions when entering the critical section.
 
 
 >> A5: How are race conditions avoided when a timer interrupt occurs
 >> during a call to timer_sleep()?
+- By installing an if check to make sure that the toExpire long is less then or equal to the current tick
+we can ensure that the thread will wak up eventually even if it misses the exact tick to wake up on.
 
 
 ---- RATIONALE ----
 
 >> A6: Why did you choose this design?  In what ways is it superior to
 >> other designs that you considered?
+- Another option we could have considered was using a semaphore to also avoid race conditions. We decided on using interrupts
+to avoid not having a structured layout for our program losing modularity. We also chose a linked list to keep track
+of the sleeping threads because it is easy to add additional threads and keep track of the top thread to pop off.
 
 
 

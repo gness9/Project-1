@@ -98,32 +98,16 @@ idk(struct list_elem *a, struct list_elem *b, void *aux UNUSED){
 void
 timer_sleep (int64_t ticks) 
 {
-  int testing = 1;
-  if(testing == 0){
-	  int64_t start = timer_ticks ();
-
-	  ASSERT (intr_get_level () == INTR_ON);
-	  while (timer_elapsed (start) < ticks) 
-		thread_yield ();
+  if(ticks > 0) {
+	ASSERT (intr_get_level () == INTR_ON);
+	struct thread * cur = thread_current();
+	int64_t time = timer_ticks() + ticks;
+	cur->toExpire = time;
+	intr_disable();
+	list_insert_ordered(&sleep_list, &cur->telem, idk, NULL);
+	thread_block();
+	intr_enable();
   }
-  else{
-	  
-	  if(ticks > 0){
-		  
-		ASSERT (intr_get_level () == INTR_ON);
-		struct thread * cur = thread_current();
-		int64_t time = timer_ticks() + ticks;
-		cur->toExpire = time;
-		intr_disable();
-		list_insert_ordered(&sleep_list, &cur->telem, idk, NULL);
-		thread_block();
-		intr_enable();
-	  }
-  }
-  
-  
-  
-  
   
   /*
   thread_yield();
