@@ -105,6 +105,12 @@ struct thread
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
+  
+	/*TODO List element for priority donations*/
+	struct list_elem priority_donation; 
+	
+	struct list_elem donation_list;
+	/*TODO end */
   };
 
 /* If false (default), use round-robin scheduler.

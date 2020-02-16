@@ -336,7 +336,35 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  
+  /*TODO PSEUDOCODE BEGIN*/
+  //disable the interrupts
+  enum intr_level old_level = intr_disable();
+  
+  //obtain priority after donation
+  //check if the list is empty or not
+  //If not empty then get first elements priority use list_entry
+  
+  //check if the current thread's priority is greater then first element priority
+  //Assign the greater priority to thread_current()->priority
+  
+  //If the current thread priority is greater then the previous priority
+  //donate priority to child threads
+  //Do while loop when lock is currently waiting and depth isnt 8
+  //if there are lock holders and those holder's priorities are lower then threads priorities
+  //update priority to highest
+  //update thread,lock, and depth
+  
+  //else if current thread priority is less then the previous priority
+  //yield thread as no longer the highest priority
+  
+  //enable the interrupt again
+  intr_set_level(old_level);
+  
+  
 }
+
+/* END TODO */
 
 /* Returns the current thread's priority. */
 int
@@ -467,6 +495,8 @@ init_thread (struct thread *t, const char *name, int priority)
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
+  
+  /*TODO initialize priority*/
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
