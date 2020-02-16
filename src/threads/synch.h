@@ -1,6 +1,7 @@
 #ifndef THREADS_SYNCH_H
 #define THREADS_SYNCH_H
 
+
 #include <list.h>
 #include <stdbool.h>
 
@@ -11,6 +12,7 @@ struct semaphore
     struct list waiters;        /* List of waiting threads. */
   };
 
+void synch_init();
 void sema_init (struct semaphore *, unsigned value);
 void sema_down (struct semaphore *);
 bool sema_try_down (struct semaphore *);
@@ -22,6 +24,8 @@ struct lock
   {
     struct thread *holder;      /* Thread holding lock (for debugging). */
     struct semaphore semaphore; /* Binary semaphore controlling access. */
+	int priority;
+	struct list_elem elem;
   };
 
 void lock_init (struct lock *);
