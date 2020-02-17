@@ -223,7 +223,7 @@ thread_block (void)
 }
 
 void
-wtf(struct thread * holder){
+addThread(struct thread * holder){
 	
 	if(!list_empty(&ready_list)){
 		struct thread * c = list_entry(list_front(&ready_list), struct thread, elem);
@@ -234,7 +234,7 @@ wtf(struct thread * holder){
 }
 
 void
-temp(struct thread * holder){
+addHolderThread(struct thread * holder){
 	struct thread * d = thread_current();
 	if(!list_empty(&ready_list)){
 	struct thread * c = list_entry(list_front(&ready_list), struct thread, elem);
@@ -253,7 +253,7 @@ findHolderLocks(struct thread * h){
 				e = list_next (e))
 		{
 		  struct lock * l = list_entry (e, struct lock, elem);
-			  testsearch(l->holder);
+			  searchThreads(l->holder);
 		  
 		  
 		}
@@ -262,11 +262,11 @@ findHolderLocks(struct thread * h){
 }
 
 void 
-testsearch(struct thread * t){
+searchThreads(struct thread * t){
 	struct thread * cur = thread_current();
 	t->priority = cur->priority;
 	if(t->nextTHolder != NULL){
-		testsearch(t->nextTHolder);
+		searchThreads(t->nextTHolder);
 	}
 }
 
@@ -389,40 +389,6 @@ thread_exit (void)
   NOT_REACHED ();
 }
 
-void
-thread_sleepa (int64_t ticks){
-	
-  /*int64_t start = timer_ticks ();
-  struct thread *cur = thread_current ();
-  enum intr_level old_level;
-
-  ASSERT (!intr_context ());
-
-  old_level = intr_disable ();
-  if (cur != idle_thread)
-    list_push_back (&sleep_list, &cur->elem);
-  cur->status = THREAD_SLEEP;
-  schedule ();
-  intr_set_level (old_level);
-	while (timer_elapsed (start) < ticks) {}
-  list_remove(&sleep_list->cur->elem);
-  list_push_back(&ready_list, &cur->elem);
-  cur->status = THREAD_READY;
-  
-	
-  enum intr_level old_level;
-
-  ASSERT (intr_get_level () == INTR_ON);
-  ASSERT (!intr_context ());
-
-  old_level = intr_disable ();
-  if (cur != idle_thread)
-    list_push_back (&sleep_list, &cur->elem);
-  cur->status = THREAD_SLEEP;
-  schedule ();
-  intr_set_level (old_level);*/
-  
-}
 
 /* Yields the CPU.  The current thread is not put to sleep and
    may be scheduled again immediately at the scheduler's whim. */
@@ -608,7 +574,6 @@ init_thread (struct thread *t, const char *name, int priority)
 {
   enum intr_level old_level;
 
-  //printf("PRIORITY: %d \n",priority);
   ASSERT (t != NULL);
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
@@ -624,26 +589,9 @@ init_thread (struct thread *t, const char *name, int priority)
 	list_init(&t->request);
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
-  //check_current_priority();
   intr_set_level (old_level);
-  
-  //printf("CREATEPRI: %d\n", t->priority);
-  //printf("IDK: %s \n", old_level);
-  //list_sort(&all_list, *test, null);
 }
 
-/*bool * 
-test (list_elem * a, list_elem * b, void * aux){
-	if(a->priority > b->priority){
-		return true;
-	}
-	return false;
-}*/
-
-/*static struct list_elem *
-search(struct list *,struct list_elem *){
-	
-}*/
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and
    returns a pointer to the frame's base. */
@@ -666,12 +614,9 @@ alloc_frame (struct thread *t, size_t size)
 static struct thread *
 next_thread_to_run (void)
 {
-  //printf("SIZENEXTTHREAD: %d",list_size(&ready_list));
   if (list_empty (&ready_list))
     return idle_thread;
   else{ 
-  //struct thread * a = list_entry (list_front (&ready_list), struct thread, elem);
-  //printf("\nPRIORITY: %d\n",a->priority);
   return list_entry (list_pop_front (&ready_list), struct thread, elem);}
 }
 
@@ -744,11 +689,6 @@ schedule (void)
   if (cur != next)
     prev = switch_threads (cur, next);
   thread_schedule_tail (prev);
-  //printf("\nLIST: %d \n",next->priority);
-  //struct thread * c = list_entry(list_front(&ready_list), struct thread, elem);
-	//printf("\n||PRESIZE: %s - %s\n",c->name, cur->name);
-	//printf("\nAAAA%s\n",prev->status);
-	//printf("\nIIIIIII: %s - %s - \n",cur->name,next->name);
 }
 
 /* Returns a tid to use for a new thread. */
