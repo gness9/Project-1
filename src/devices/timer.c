@@ -108,6 +108,7 @@ timer_sleep (int64_t ticks)
 	thread_block();
 	intr_enable();
   }
+  }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
    turned on. */
