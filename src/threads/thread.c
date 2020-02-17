@@ -224,49 +224,61 @@ thread_block (void)
 
 void
 wtf(struct thread * holder){
-	//ASSERT(1==0);
 	
 	if(!list_empty(&ready_list)){
 		struct thread * c = list_entry(list_front(&ready_list), struct thread, elem);
 	struct thread * t = thread_current();
-	//printf("PRESIZE: %s - %s - %s\n",c->name, t->name, holder->name);
 	}
 
 	list_push_front(&ready_list,&holder->elem);
-	//printf("POSTSIZE: %d\n",thread_current()->priority);
-	//check_current_priority();
-	//thread_yield();
 }
 
 void
 temp(struct thread * holder){
 	struct thread * d = thread_current();
-	
-	//printf("\n%s - %s\n",holder->name, d->name);
 	if(!list_empty(&ready_list)){
 	struct thread * c = list_entry(list_front(&ready_list), struct thread, elem);
-	//printf("TEMPNAMES: %s - %s - %s\n",c->name, d->name, holder->name);
 	
 	list_remove(&holder->elem);
 	}
 	list_push_front(&ready_list, &holder->elem);
-	//printf("YYYYYYYYYYYYYYYYYY");
-	//thread_yield();
-	//ASSERT( 1 == 0);
 	check_current_priority();
 }
 
+void
+findHolderLocks(struct thread * h){
+	if(!list_empty(&h->request)){
+		for (struct list_elem * e = list_begin (&(h->request));
+				e != list_end (&(h->request));
+				e = list_next (e))
+		{
+		  struct lock * l = list_entry (e, struct lock, elem);
+			  testsearch(l->holder);
+		  
+		  
+		}
+	}
+	
+}
 
+void 
+testsearch(struct thread * t){
+	struct thread * cur = thread_current();
+	t->priority = cur->priority;
+	if(t->nextTHolder != NULL){
+		testsearch(t->nextTHolder);
+	}
+}
 
 void
 findTHolder(struct thread * h, struct thread * cur){
-		
-		printf("F\n\n");
+	if(!list_empty(&h->request)){
+		findHolderLocks(h);
+	}
 	if(h->nextTHolder == NULL){
 		h->nextTHolder = cur;
 	}
 	else if(h->nextTHolder == cur){
-		return;
 	}
 	else{
 		h->priority = cur->priority;
@@ -274,70 +286,12 @@ findTHolder(struct thread * h, struct thread * cur){
 	}
 }
 
-//may need to do all_list if shit dont work
-void
-findHolder(tid_t td, tid_t cur_td){
-	//printf("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
-	for (struct list_elem * e = list_begin (&all_list); e != list_end (&all_list);
-       e = list_next (e))
-    {
-      struct thread *t = list_entry (e, struct thread, allelem);
-      if(t->tid == td){
-		  if(t->nextHolder == NULL){
-			t->nextHolder = cur_td;
-			return;
-		  }
-		  else{
-			  findHolder(t->nextHolder, cur_td);
-			  return;
-		  }
-	  }
-    }
-	//printf("SOMETHING BROKE!!!!!!!!!!!!!!");
-}
-
-//may need to do all_list if shit dont work
-struct thread *
-findHolderLock(tid_t td){
-	if(list_empty(&all_list)){
-		//printf("FUCKING EMPTY");
-		return thread_current();
-	}
-	else{
-		
-		for (struct list_elem * e = list_begin (&all_list); e != list_end (&all_list);
-		   e = list_next (e))
-		{
-		  struct thread *t = list_entry (e, struct thread, allelem);
-		  if(t->tid == td){
-		  //printf("\nNAME: %s\n",t->name);
-			  return t;
-		  }
-		}
-		//printf("LOCKSOMETHING BROKE!!!!!!!!!!!!!!");
-		return thread_current();
-	}
-}
-
-/*void
-donate_priority(struct thread * holder, int priority){
-	
-}*/
-
-/*static bool
-priority_sort_compare(struct list_elem * a, struct list_elem * b, void * aux UNUSED){
-	struct thread * c = list_entry(a, struct thread, elem);
-	struct thread * d = list_entry(b, struct thread, elem);
-	return c->priority >= d->priority;
-}*/
-
 
 
 static bool
 priority_compare(struct list_elem * a, struct list_elem * b, void * aux UNUSED){
 	struct thread * c = list_entry(a, struct thread, elem);
 	struct thread * d = list_entry(b, struct thread, elem);
-	//printf("\n%d - %d\n",c->priority, d->priority);
 	return c->priority >= d->priority;
 }
 
@@ -349,20 +303,10 @@ sortlist(){
 void
 check_current_priority(){
 	if(list_size(&ready_list) > 0){
-		//printf("SIZEZEEEEEEEEE: %d\n",list_size(&ready_list));
 		struct thread * cur = thread_current();
 		struct thread * top = list_entry(list_front(&ready_list), struct thread, elem);
-		//printf("\n%d - %d\n",cur->priority, top->priority);
-		//if(cur == top){printf("FFFFFFFFFFFFFFFFFFFFFF");}
-		//printf("FFF%s",cur->stack[0]);
-  //printf("CURSHIT: %s - %d - %d\n",cur->name, cur->priority, cur->init_priority);
-  
-  //printf("TOPSHIT: %s - %d - %d\n",top->name, top->priority, top->init_priority);
-		//printf("IDK: %s - %d | %s - %d\n",cur->name, cur->priority, top->name, top->priority);
-	if(cur != idle_thread && cur->priority < top->priority/* && !lock_held_by_current_thread(&tid_lock)*/){
-		  //list_insert_ordered(&ready_list, &cur->elem, priority_compare, NULL);
-		  //printf("F");
-		  thread_yield();//printf("HELLYEAH");
+	if(cur != idle_thread && cur->priority < top->priority){
+		  thread_yield();
 		}
 	}
 	return;
@@ -383,19 +327,12 @@ thread_unblock (struct thread *t)
   enum intr_level old_level;
 
   ASSERT (is_thread (t));
-
-	//print
-  
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  //printf("NAME: %s\n - SIZE: %n",t->name, list_size(&ready_list));
-  
   list_insert_ordered(&ready_list, &t->elem, priority_compare, NULL);
-  //list_push_back (&ready_thread_list, &t->elem);
   t->status = THREAD_READY;
   check_current_priority();
   intr_set_level (old_level);
-  //printf("SIZEUNBLOCK: %d",list_size(&ready_list));
 }
 
 /* Returns the name of the running thread. */
@@ -550,36 +487,10 @@ thread_set_priority (int new_priority)
     struct thread * top = list_entry(list_front(&ready_list), struct thread, elem);
     if (top != NULL && top->priority > new_priority) {
 	  check_current_priority();
-	  /*intr_disable ();
-      list_insert_ordered(&ready_list, &cur->elem, priority_compare, NULL);
-	  check_current_priority();
-	  intr_enable ();*/
     }
   }
   
   intr_set_level(old_level);
-  /*
-  struct thread * cur = thread_current();
-  if (cur->priority == cur->init_priority) {
-    cur->priority = new_priority;
-    cur->init_priority = new_priority;
-  }
-  // otherwise, it has a donation: the original priority only should have changed
-  else {
-    cur->init_priority = new_priority;
-  }
-
-  // if current thread gets its priority decreased, then yield
-  // (foremost entry in ready_list shall have the highest priority)
-  if (!list_empty (&ready_list)) {
-    struct thread *next = list_entry(list_begin(&ready_list), struct thread, elem);
-    if (next != NULL && next->priority > new_priority) {
-	  intr_disable ();
-      list_insert_ordered(&ready_list, &cur->elem, priority_compare, NULL);
-	  check_current_priority();
-	  intr_enable ();
-    }
-  }*/
 }
 
 /* Returns the current thread's priority. */
@@ -710,6 +621,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->init_priority = priority;
   t->magic = THREAD_MAGIC;
   t->nextHolder = NULL;
+	list_init(&t->request);
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   //check_current_priority();

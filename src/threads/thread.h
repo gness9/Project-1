@@ -96,6 +96,7 @@ struct thread
 	tid_t nextHolder;
 	struct thread * nextTHolder;
 	struct list_elem telem;
+	struct list request;
 	
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
