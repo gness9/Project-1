@@ -107,11 +107,18 @@ of the sleeping threads because it is easy to add additional threads and keep tr
 >> B6: Describe a potential race in thread_set_priority() and explain
 >> how your implementation avoids it.  Can you use a lock to avoid
 >> this race?
+- A possible race condition in thread_set_priority() could occur when we are updating the priority at the
+same time that the interrupt handler updates the priority. This was taken care of in our program by implementing
+an interrupt disable while setting the priority. Interrupt handlers cannot use locks making it not possible to use one to avoid race.
+
 
 ---- RATIONALE ----
 
 >> B7: Why did you choose this design?  In what ways is it superior to
 >> another design you considered?
+- We decided to use this design because we found it the simplest way to keep track of all the priorities and locks.
+It could have been possible to create more fields in our threads to store more occasionally used variables but found it would be superior
+to use only the necessary variables in order to reduce needless complexity.
 
 
               ADVANCED SCHEDULER [EXTRA CREDIT]
