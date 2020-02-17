@@ -179,6 +179,7 @@ lock_init (struct lock *lock)
 
   lock->holder = NULL;
   sema_init (&lock->semaphore, 1);
+  lock->priority = 0;
 }
 
 /* Acquires LOCK, sleeping until it becomes available if
@@ -195,7 +196,68 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
-
+  
+  if(lock->holder != NULL){
+	 // ASSERT(1 == 0);
+  //ASSERT(lock->holder->name != "main");
+  //printf("\nLHN: %s\n",lock->holder->name);
+		struct thread * holder = lock->holder;
+	    struct thread * cur = thread_current();
+		if(cur->priority > holder->priority){//ASSERT( holder == cur);
+			
+			list_push_front(&cur->request, &lock->elem);
+			//ASSERT(holder->nextTHolder == NULL);
+			/*if(holder->nextTHolder == NULL){
+				
+				holder->nextTHolder = cur;
+				//findHolderLocks(holder);
+			}
+			else{
+				findTHolder(holder->nextTHolder, cur);
+				
+			}*/
+			findTHolder(holder, cur);
+			//findHolderLocks(holder);
+			holder->priority = cur->priority;
+			
+			
+			temp(holder);
+			
+			
+			
+			//list_push_front(&ready_list, holder->elem);
+			//thread_yield();
+			//check_current_priority();
+		}
+  }
+  //printf("TES\n\n");
+	/*if(lock->holder != NULL){
+		
+			//printf("AAAAAAAAAAAAAAAA");
+		struct thread * holder = lock->holder;
+	    struct thread * cur = thread_current();
+		//printf("\nPRI: %d - %d\n",holder->priority,cur->priority);
+		  if(cur->priority > holder->priority){
+			  if(holder->nextHolder == NULL){
+				  //printf("AAAAAAAAAAAAAAAAAA");
+				//printf("\n%s\n",cur->name);
+				  holder->nextHolder = cur->tid;
+			  }
+			  else{
+				  //printf("BBBBBBBBBBBBBBBBBBBBBBBBBB");
+				  findHolder(holder->nextHolder, cur->tid);
+			  }
+			  //lock->priority = cur->priority;
+			  holder->priority = cur->priority;
+			  
+			  temp(holder);
+			  //check_current_priority();
+			  //sortlist();
+		  //donate_priority(holder, cur);
+		  }
+	}*/
+  
+  
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
 }
@@ -229,10 +291,49 @@ void
 lock_release (struct lock *lock) 
 {
   ASSERT (lock != NULL);
+  //printf("CUR: %s",lock->holder->name);
   ASSERT (lock_held_by_current_thread (lock));
-
+  
+  
+  struct thread * cur = thread_current();
+  //printf("FUCK: %s - %d - %d\n",cur->name, cur->priority, cur->init_priority);
+  //printf("\n\nINIT:%s - %d - %d\n",cur->name,cur->priority, cur->init_priority);
+  if(cur->nextTHolder != NULL){
+	  //printf("\nAAA%s\n",cur->nextTHolder->name);
+	  //printf("\n%s\n",cur->nextTHolder->name);
+	  struct thread * tmp = cur->nextTHolder;
+	  
+	  cur->priority = tmp->init_priority;
+	  cur->nextTHolder = NULL;
+	  //thread_set_priority(cur->init_priority);
+	  //printf("\n\nINIT:%s - %d - %d\n",cur->name,cur->priority, cur->init_priority);
+	  //list_remove(&lock->elem);
+	  //lock->holder = tmp;
+	  lock->holder = NULL;
+		sema_up (&lock->semaphore);
+	  wtf(tmp);
+	  //thread_yield();
+	  //lock_acquire(lock);
+	  //lock_acquire(lock);
+	  //printf("\n%s\n",cur->nextTHolder->name);
+	  /*struct thread * tmp = findHolderLock(cur->nextHolder);
+	  lock->holder = tmp;
+	  cur->nextHolder = NULL;
+	  thread_set_priority(cur->init_priority);
+	  if(cur == lock->holder){
+		  lock->holder = NULL;
+			sema_up (&lock->semaphore);
+	  }
+	  return;*/
+	  //list_remove(&lock->elem);
+  }
+else{
+	
   lock->holder = NULL;
   sema_up (&lock->semaphore);
+  cur->priority = cur->init_priority;
+}
+
 }
 
 /* Returns true if the current thread holds LOCK, false
