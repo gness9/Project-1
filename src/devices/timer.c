@@ -86,7 +86,7 @@ timer_elapsed (int64_t then)
 }
 
 static bool
-idk(struct list_elem *a, struct list_elem *b, void *aux UNUSED){
+sleepCompare(struct list_elem *a, struct list_elem *b, void *aux UNUSED){
 	struct thread * c = list_entry(a, struct thread, telem);
 	struct thread * d = list_entry(b, struct thread, telem);
 	return c->toExpire < d->toExpire;
@@ -104,7 +104,7 @@ timer_sleep (int64_t ticks)
 	int64_t time = timer_ticks() + ticks;
 	cur->toExpire = time;
 	intr_disable();
-	list_insert_ordered(&sleep_list, &cur->telem, idk, NULL);
+	list_insert_ordered(&sleep_list, &cur->telem, sleepCompare, NULL);
 	thread_block();
 	intr_enable();
   }
