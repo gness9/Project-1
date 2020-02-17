@@ -106,13 +106,13 @@ of the sleeping threads because it is easy to add additional threads and keep tr
 
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
-    - 
+    - By ordering the ready_list based on a priorty variable, with the greatest first, you can ensure that the highest priority is at the front of the list.
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
-    - 
+    - If low priority (L) has a lock that medium priority (M) wants, then M will give L M's priority so that L will be able to run as the current thread, otherwise M will just sit as the current thread. Nested donation is handled by having each thread containing a list of all locks it is trying to acquire. Looping through this and the Lock->handler will allow us to pass priority from the highest to the lowest and all in between.
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
-    - 
+    - When lock_release() is called, we made sure that the thread that first requested the lock is at the front of ready_list when we release the lock allowing that thread to get that lock as lock_acquire() only works on the current thread.
 ---- SYNCHRONIZATION ----
 
 >> B6: Describe a potential race in thread_set_priority() and explain
