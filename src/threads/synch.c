@@ -203,7 +203,7 @@ lock_acquire (struct lock *lock)
 			list_push_front(&cur->request, &lock->elem);
 			findTHolder(holder, cur);
 			holder->priority = cur->priority;
-			temp(holder);
+			addHolderThread(holder);
 		}
   }
   
@@ -251,7 +251,7 @@ lock_release (struct lock *lock)
 	  cur->nextTHolder = NULL;
 	  lock->holder = NULL;
 		sema_up (&lock->semaphore);
-	  wtf(tmp);
+	  addThread(tmp);
   }
 	else{
 		
