@@ -88,6 +88,17 @@ of the sleeping threads because it is easy to add additional threads and keep tr
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+   */threads/thread.h: int init_priority
+        - The initial priority of the thread before priority
+            donation. Ensures that priority donation will not
+            decrease a thread's priority.
+   */threads/thread.h: struct list_elem allelem
+        - List element to store all threads
+   */threads/thread.h: void check_current_priority();
+        - Check thhe priority of the current thread. If the thread is not idle
+            and it no longer has the highest priority, yield CPU
+   */
+
 >> B2: Explain the data structure used to track priority donation.
 
 
@@ -95,13 +106,13 @@ of the sleeping threads because it is easy to add additional threads and keep tr
 
 >> B3: How do you ensure that the highest priority thread waiting for
 >> a lock, semaphore, or condition variable wakes up first?
-
+    - 
 >> B4: Describe the sequence of events when a call to lock_acquire()
 >> causes a priority donation.  How is nested donation handled?
-
+    - 
 >> B5: Describe the sequence of events when lock_release() is called
 >> on a lock that a higher-priority thread is waiting for.
-
+    - 
 ---- SYNCHRONIZATION ----
 
 >> B6: Describe a potential race in thread_set_priority() and explain
